@@ -260,3 +260,37 @@ class TurnoRepository(BaseRepository[Turno]):
             conteo[codigo] = conteo.get(codigo, 0) + 1
         
         return conteo
+
+    def get_turnos_en_rango(
+        self,
+        fecha_inicio: datetime,
+        fecha_fin: datetime,
+        solo_confirmados: bool = True
+    ) -> List[Turno]:
+        """
+        Obtiene turnos en un rango de fechas/horas específico.
+        
+        Args:
+            fecha_inicio: Inicio del rango
+            fecha_fin: Fin del rango
+            solo_confirmados: Si es True, solo devuelve turnos confirmados (CONF)
+        
+        Returns:
+            Lista de turnos en el rango
+        """
+        stmt = select(Turno).options(
+            joinedload(Turno.paciente),
+            joinedload(Turno.medico),
+            joinedload(Turno.especialidad)
+        ).where(
+            Turno.activo == True,  # noqa: E712
+            Turno.fecha_hora >= fecha_inicio,
+            Turno.fecha_hora <= fecha_fin
+        )
+        
+        if solo_confirmados:
+            stmt = stmt.join(Turno.estado).where(
+                Turno.estado.has(codigo="CONF")
+            )
+            
+        return list(self.session.scalars(stmt).unique().all())

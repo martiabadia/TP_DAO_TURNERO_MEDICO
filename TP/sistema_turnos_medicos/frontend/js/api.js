@@ -83,6 +83,26 @@ class APIClient {
         return this.request(`/medicos/${medicoId}/disponibilidades`);
     }
 
+    async createMedico(medicoData) {
+        return this.request('/medicos/', {
+            method: 'POST',
+            body: JSON.stringify(medicoData),
+        });
+    }
+
+    async updateMedico(medicoId, updateData) {
+        return this.request(`/medicos/${medicoId}`, {
+            method: 'PUT',
+            body: JSON.stringify(updateData),
+        });
+    }
+
+    async deleteMedico(medicoId) {
+        return this.request(`/medicos/${medicoId}`, {
+            method: 'DELETE',
+        });
+    }
+
     // ============================================================
     // ESPECIALIDADES
     // ============================================================
@@ -101,7 +121,7 @@ class APIClient {
 
     async getTurnos(filters = {}) {
         const params = new URLSearchParams();
-        
+
         if (filters.fecha_desde) params.append('fecha_desde', filters.fecha_desde);
         if (filters.fecha_hasta) params.append('fecha_hasta', filters.fecha_hasta);
         if (filters.id_paciente) params.append('id_paciente', filters.id_paciente);

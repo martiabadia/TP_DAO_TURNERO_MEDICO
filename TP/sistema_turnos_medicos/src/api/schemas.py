@@ -40,6 +40,7 @@ class MedicoListResponse(BaseModel):
     nombre: str
     apellido: str
     nombre_completo: str
+    especialidades: List[EspecialidadResponse] = []
     
     class Config:
         from_attributes = True
@@ -106,6 +107,29 @@ class HorarioDisponibleResponse(BaseModel):
 # ============================================================
 # ESQUEMAS DE SOLICITUD
 # ============================================================
+
+class MedicoCreate(BaseModel):
+    """Esquema para crear un médico."""
+    matricula: str = Field(..., min_length=4, max_length=40)
+    nombre: str = Field(..., min_length=2, max_length=80)
+    apellido: str = Field(..., min_length=2, max_length=80)
+    dni: str = Field(..., min_length=7, max_length=20)
+    email: EmailStr
+    telefono: str = Field(..., min_length=8, max_length=30)
+    direccion: Optional[str] = Field(None, max_length=200)
+    genero: Optional[str] = Field(None, max_length=20)
+    especialidades_ids: List[int] = Field(..., min_length=1)
+
+
+class MedicoUpdate(BaseModel):
+    """Esquema para actualizar un médico."""
+    nombre: Optional[str] = Field(None, min_length=2, max_length=80)
+    apellido: Optional[str] = Field(None, min_length=2, max_length=80)
+    email: Optional[EmailStr] = None
+    telefono: Optional[str] = Field(None, min_length=8, max_length=30)
+    direccion: Optional[str] = Field(None, max_length=200)
+    genero: Optional[str] = Field(None, max_length=20)
+    especialidades_ids: Optional[List[int]] = None
 
 class PacienteCreate(BaseModel):
     """Esquema para crear un paciente."""

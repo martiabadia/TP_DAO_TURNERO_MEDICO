@@ -1,0 +1,124 @@
+
+// ============================================================
+// GESTIÓN DE MÉDICOS
+// ============================================================
+
+async function loadMedicosTable() {
+    try {
+        showLoading();
+        const medicos = await api.getMedicos();
+        
+        const tbody = document.getElementById('medicos-tbody');
+        tbody.innerHTML = '';
+        
+        if (medicos.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 2rem;">No hay médicos registrados</td></tr>';
+            return;
+        }
+        
+        medicos.forEach(med => {
+            const row = document.createElement('tr');
+            const especialidadesStr = med.especialidades.map(e => e.nombre).join(', ');
+            
+            row.innerHTML = `
+                <td>${med.matricula}</td>
+                <td>${med.nombre} ${med.apellido}</td>
+                <td>${especialidadesStr}</td>
+                <td>${med.email}</td>
+                <td>
+                    <button class="btn btn-danger" onclick="eliminarMedico(${med.id}, '${med.nombre} ${med.apellido}')">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(row);
+        });
+        
+    } catch (error) {
+        showToast('Error al cargar médicos', 'error');
+    } finally {
+        hideLoading();
+    }
+}
+
+async function loadEspecialidadesCheckboxes() {
+    try {
+        const especialidades = await api.getEspecialidades();
+        const container = document.getElementById('med-especialidades-check');
+        container.innerHTML = '';
+        
+        especialidades.forEach(esp => {
+            const label = document.createElement('label');
+            label.className = 'checkbox-label';
+            label.innerHTML = `
+                <input type="checkbox" name="especialidades" value="${esp.id}">
+                ${esp.nombre}
+            `;
+            container.appendChild(label);
+        });
+        
+    } catch (error) {
+        console.error('Error al cargar especialidades:', error);
+    }
+}
+
+// Formulario de nuevo médico
+const formMedico = document.getElementById('form-nuevo-medico');
+if (formMedico) {
+    formMedico.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        // Obtener especialidades seleccionadas
+        const checkboxes = document.querySelectorAll('input[name="especialidades"]:checked');
+        const especialidadesIds = Array.from(checkboxes).map(cb => parseInt(cb.value));
+        
+        if (especialidadesIds.length === 0) {
+            showToast('Debe seleccionar al menos una especialidad', 'warning');
+            return;
+        }
+        
+        const medicoData = {
+            matricula: document.getElementById('med-matricula').value.trim(),
+            dni: document.getElementById('med-dni').value.trim(),
+            nombre: document.getElementById('med-nombre').value.trim(),
+            apellido: document.getElementById('med-apellido').value.trim(),
+            email: document.getElementById('med-email').value.trim(),
+            telefono: document.getElementById('med-telefono').value.trim(),
+            especialidades_ids: especialidadesIds
+        };
+        
+        try {
+            showLoading();
+            await api.createMedico(medicoData);
+            
+            showToast('Médico registrado exitosamente', 'success');
+            formMedico.reset();
+            
+            // Volver a la lista
+            document.querySelector('[data-tab="lista-medicos"]').click();
+            loadMedicosTable();
+            
+        } catch (error) {
+            showToast(`Error al registrar médico: ${error.message}`, 'error');
+        } finally {
+            hideLoading();
+        }
+    });
+}
+
+async function eliminarMedico(id, nombre) {
+    if (!confirm(`¿Está seguro de eliminar al Dr. ${nombre}?`)) {
+        return;
+    }
+    
+    try {
+        showLoading();
+        await api.deleteMedico(id);
+        showToast('Médico eliminado exitosamente', 'success');
+        loadMedicosTable();
+    } catch (error) {
+        showToast(`Error al eliminar médico: ${error.message}`, 'error');
+    } finally {
+        hideLoading();
+    }
+}

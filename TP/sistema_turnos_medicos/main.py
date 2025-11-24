@@ -27,14 +27,21 @@ def main():
     print("=" * 60)
     print()
     
-    # Iniciar servidor Uvicorn
-    uvicorn.run(
-        "src.api.app:app",
-        host="0.0.0.0",
-        port=8000,
-        reload=False,  # Desactivado para evitar problemas con venv
-        log_level="info"
-    )
+    # Iniciar servidor Uvicorn y Scheduler
+    import asyncio
+    from src.utils.scheduler import start_scheduler
+    
+    config = uvicorn.Config("src.api.app:app", host="0.0.0.0", port=8000, log_level="info")
+    server = uvicorn.Server(config)
+    
+    async def run_system():
+        # Ejecutar servidor y scheduler concurrentemente
+        await asyncio.gather(
+            server.serve(),
+            start_scheduler()
+        )
+        
+    asyncio.run(run_system())
 
 
 if __name__ == "__main__":
