@@ -179,7 +179,7 @@ async function loadHomeStats() {
         document.getElementById('stat-especialidades').textContent = especialidades.length;
         document.getElementById('stat-pacientes').textContent = pacientes.length;
 
-        // Contar turnos activos (no cancelados)
+        // Contar turnos del mes actual (no cancelados ni inasistidos)
         const turnosActivos = turnos.filter(t =>
             t.estado.codigo !== 'CANC' && t.estado.codigo !== 'INAS'
         );
@@ -1210,9 +1210,14 @@ async function loadPacientesTable() {
                 <td>${pac.telefono}</td>
                 <td>${formatDate(pac.fecha_nacimiento)}</td>
                 <td>
-                    <button class="btn btn-danger" onclick="eliminarPaciente(${pac.id}, '${pac.nombre} ${pac.apellido}')">
-                        <i class="fas fa-trash"></i>
-                    </button>
+                    <div class="actions" style="display: flex; gap: 0.5rem;">
+                        <button class="btn-icon btn-edit" onclick="abrirModalEditarPaciente(${pac.id})" title="Editar">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn-icon btn-delete" onclick="eliminarPaciente(${pac.id}, '${pac.nombre} ${pac.apellido}')" title="Eliminar">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
                 </td>
             `;
             tbody.appendChild(row);
@@ -1241,6 +1246,70 @@ async function eliminarPaciente(id, nombre) {
         hideLoading();
     }
 }
+
+async function abrirModalEditarPaciente(id) {
+    try {
+        showLoading();
+        const paciente = await api.getPacienteById(id);
+        
+        // Cargar datos en el formulario
+        document.getElementById('edit-pac-id').value = paciente.id;
+        document.getElementById('edit-pac-dni').value = paciente.dni;
+        document.getElementById('edit-pac-nombre').value = paciente.nombre;
+        document.getElementById('edit-pac-apellido').value = paciente.apellido;
+        document.getElementById('edit-pac-email').value = paciente.email;
+        document.getElementById('edit-pac-telefono').value = paciente.telefono;
+        document.getElementById('edit-pac-fecha-nacimiento').value = paciente.fecha_nacimiento;
+        document.getElementById('edit-pac-direccion').value = paciente.direccion;
+        document.getElementById('edit-pac-obra-social').value = paciente.obra_social || '';
+        document.getElementById('edit-pac-numero-afiliado').value = paciente.numero_afiliado || '';
+        
+        // Mostrar modal
+        const modal = document.getElementById('modal-editar-paciente');
+        modal.style.display = 'flex';
+        
+    } catch (error) {
+        showToast(`Error al cargar datos del paciente: ${error.message}`, 'error');
+    } finally {
+        hideLoading();
+    }
+}
+
+function cerrarModalEditarPaciente() {
+    const modal = document.getElementById('modal-editar-paciente');
+    modal.style.display = 'none';
+    document.getElementById('form-editar-paciente').reset();
+}
+
+// Event listener para el formulario de editar paciente
+document.getElementById('form-editar-paciente').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const id = document.getElementById('edit-pac-id').value;
+    const pacienteData = {
+        dni: document.getElementById('edit-pac-dni').value.trim(),
+        nombre: document.getElementById('edit-pac-nombre').value.trim(),
+        apellido: document.getElementById('edit-pac-apellido').value.trim(),
+        email: document.getElementById('edit-pac-email').value.trim(),
+        telefono: document.getElementById('edit-pac-telefono').value.trim(),
+        fecha_nacimiento: document.getElementById('edit-pac-fecha-nacimiento').value,
+        direccion: document.getElementById('edit-pac-direccion').value.trim(),
+        obra_social: document.getElementById('edit-pac-obra-social').value.trim() || null,
+        numero_afiliado: document.getElementById('edit-pac-numero-afiliado').value.trim() || null,
+    };
+    
+    try {
+        showLoading();
+        await api.updatePaciente(id, pacienteData);
+        showToast('Paciente actualizado exitosamente', 'success');
+        cerrarModalEditarPaciente();
+        await loadPacientesTable();
+    } catch (error) {
+        showToast(`Error al actualizar paciente: ${error.message}`, 'error');
+    } finally {
+        hideLoading();
+    }
+});
 
 function navegarRegistrarPaciente() {
     navigateTo('turnos');
@@ -1274,9 +1343,14 @@ async function loadMedicosTable() {
                 <td>${especialidadesStr}</td>
                 <td>${med.email}</td>
                 <td>
-                    <button class="btn btn-danger" onclick="eliminarMedico(${med.id}, '${med.nombre} ${med.apellido}')">
-                        <i class="fas fa-trash"></i>
-                    </button>
+                    <div class="actions" style="display: flex; gap: 0.5rem;">
+                        <button class="btn-icon btn-edit" onclick="abrirModalEditarMedico(${med.id})" title="Editar">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn-icon btn-delete" onclick="eliminarMedico(${med.id}, '${med.nombre} ${med.apellido}')" title="Eliminar">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
                 </td>
             `;
             tbody.appendChild(row);
@@ -1370,6 +1444,95 @@ async function eliminarMedico(id, nombre) {
         hideLoading();
     }
 }
+
+async function abrirModalEditarMedico(id) {
+    try {
+        showLoading();
+        const [medico, especialidades] = await Promise.all([
+            api.getMedicoById(id),
+            api.getEspecialidades()
+        ]);
+        
+        // Cargar datos en el formulario
+        document.getElementById('edit-med-id').value = medico.id;
+        document.getElementById('edit-med-matricula').value = medico.matricula;
+        document.getElementById('edit-med-dni').value = medico.dni;
+        document.getElementById('edit-med-nombre').value = medico.nombre;
+        document.getElementById('edit-med-apellido').value = medico.apellido;
+        document.getElementById('edit-med-email').value = medico.email;
+        document.getElementById('edit-med-telefono').value = medico.telefono;
+        document.getElementById('edit-med-direccion').value = medico.direccion || '';
+        document.getElementById('edit-med-genero').value = medico.genero || '';
+        
+        // Cargar especialidades con checkboxes
+        const container = document.getElementById('edit-med-especialidades-check');
+        container.innerHTML = '';
+        
+        especialidades.forEach(esp => {
+            const label = document.createElement('label');
+            label.className = 'checkbox-label';
+            const isChecked = medico.especialidades.some(e => e.id === esp.id);
+            label.innerHTML = `
+                <input type="checkbox" name="edit-especialidades" value="${esp.id}" ${isChecked ? 'checked' : ''}>
+                ${esp.nombre}
+            `;
+            container.appendChild(label);
+        });
+        
+        // Mostrar modal
+        const modal = document.getElementById('modal-editar-medico');
+        modal.style.display = 'flex';
+        
+    } catch (error) {
+        showToast(`Error al cargar datos del médico: ${error.message}`, 'error');
+    } finally {
+        hideLoading();
+    }
+}
+
+function cerrarModalEditarMedico() {
+    const modal = document.getElementById('modal-editar-medico');
+    modal.style.display = 'none';
+    document.getElementById('form-editar-medico').reset();
+}
+
+// Event listener para el formulario de editar médico
+document.getElementById('form-editar-medico').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const id = document.getElementById('edit-med-id').value;
+    
+    // Obtener especialidades seleccionadas
+    const checkboxes = document.querySelectorAll('input[name="edit-especialidades"]:checked');
+    const especialidadesIds = Array.from(checkboxes).map(cb => parseInt(cb.value));
+    
+    if (especialidadesIds.length === 0) {
+        showToast('Debe seleccionar al menos una especialidad', 'warning');
+        return;
+    }
+    
+    const medicoData = {
+        nombre: document.getElementById('edit-med-nombre').value.trim(),
+        apellido: document.getElementById('edit-med-apellido').value.trim(),
+        email: document.getElementById('edit-med-email').value.trim(),
+        telefono: document.getElementById('edit-med-telefono').value.trim(),
+        direccion: document.getElementById('edit-med-direccion').value.trim() || null,
+        genero: document.getElementById('edit-med-genero').value || null,
+        especialidades_ids: especialidadesIds
+    };
+    
+    try {
+        showLoading();
+        await api.updateMedico(id, medicoData);
+        showToast('Médico actualizado exitosamente', 'success');
+        cerrarModalEditarMedico();
+        await loadMedicosTable();
+    } catch (error) {
+        showToast(`Error al actualizar médico: ${error.message}`, 'error');
+    } finally {
+        hideLoading();
+    }
+});
 
 // ============================================================
 // FUNCIONES GLOBALES

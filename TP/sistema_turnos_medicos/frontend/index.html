@@ -34,7 +34,7 @@
             </button>
             <button class="nav-btn" data-page="mis-turnos">
                 <i class="fas fa-list"></i>
-                <span>Mis Turnos</span>
+                <span>Turnos</span>
             </button>
             <button class="nav-btn" data-page="pacientes">
                 <i class="fas fa-users"></i>
@@ -110,7 +110,7 @@
                         <i class="fas fa-calendar-alt"></i>
                         <div class="stat-info">
                             <h3 id="stat-turnos">-</h3>
-                            <p>Turnos Activos</p>
+                            <p>Turnos del Mes</p>
                         </div>
                     </div>
                     <div class="stat-card">
@@ -442,11 +442,11 @@
             </div>
         </section>
 
-        <!-- Mis Turnos Page -->
+        <!-- Turnos Page -->
         <section id="mis-turnos-page" class="page">
             <div class="container">
                 <div class="page-header">
-                    <h1><i class="fas fa-list"></i> Mis Turnos</h1>
+                    <h1><i class="fas fa-list"></i> Turnos</h1>
                     <p>Consulta y gestiona tus turnos médicos</p>
                 </div>
 
@@ -946,6 +946,149 @@
             </div>
         </section>
     </main>
+
+    <!-- Modal Editar Paciente -->
+    <div id="modal-editar-paciente" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Editar Paciente</h2>
+                <button class="modal-close" onclick="cerrarModalEditarPaciente()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="form-editar-paciente">
+                <input type="hidden" id="edit-pac-id">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="edit-pac-dni">DNI *</label>
+                        <input type="text" id="edit-pac-dni" required maxlength="10">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-pac-nombre">Nombre *</label>
+                        <input type="text" id="edit-pac-nombre" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-pac-apellido">Apellido *</label>
+                        <input type="text" id="edit-pac-apellido" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="edit-pac-email">Email *</label>
+                        <input type="email" id="edit-pac-email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-pac-telefono">Teléfono *</label>
+                        <input type="tel" id="edit-pac-telefono" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-pac-fecha-nacimiento">Fecha de Nacimiento *</label>
+                        <input type="date" id="edit-pac-fecha-nacimiento" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="edit-pac-direccion">Dirección *</label>
+                        <input type="text" id="edit-pac-direccion" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="edit-pac-obra-social">Obra Social</label>
+                        <input type="text" id="edit-pac-obra-social">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-pac-numero-afiliado">Número de Afiliado</label>
+                        <input type="text" id="edit-pac-numero-afiliado">
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="cerrarModalEditarPaciente()">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Guardar Cambios
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Editar Médico -->
+    <div id="modal-editar-medico" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Editar Médico</h2>
+                <button class="modal-close" onclick="cerrarModalEditarMedico()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="form-editar-medico">
+                <input type="hidden" id="edit-med-id">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="edit-med-matricula">Matrícula *</label>
+                        <input type="text" id="edit-med-matricula" required disabled>
+                        <small style="color: var(--text-secondary);">La matrícula no se puede modificar</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-med-dni">DNI *</label>
+                        <input type="text" id="edit-med-dni" required disabled>
+                        <small style="color: var(--text-secondary);">El DNI no se puede modificar</small>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="edit-med-nombre">Nombre *</label>
+                        <input type="text" id="edit-med-nombre" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-med-apellido">Apellido *</label>
+                        <input type="text" id="edit-med-apellido" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="edit-med-email">Email *</label>
+                        <input type="email" id="edit-med-email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-med-telefono">Teléfono *</label>
+                        <input type="tel" id="edit-med-telefono" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="edit-med-direccion">Dirección</label>
+                        <input type="text" id="edit-med-direccion">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-med-genero">Género</label>
+                        <select id="edit-med-genero">
+                            <option value="">-- Seleccione --</option>
+                            <option value="Masculino">Masculino</option>
+                            <option value="Femenino">Femenino</option>
+                            <option value="Otro">Otro</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Especialidades *</label>
+                    <div id="edit-med-especialidades-check" class="checkbox-grid">
+                        <!-- Se carga dinámicamente -->
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="cerrarModalEditarMedico()">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Guardar Cambios
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <!-- Loading Overlay -->
     <div id="loading-overlay" class="loading-overlay" style="display: none;">

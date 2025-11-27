@@ -39,6 +39,11 @@ class MedicoResponse(BaseModel):
     matricula: str
     nombre: str
     apellido: str
+    dni: str
+    email: str
+    telefono: str
+    direccion: Optional[str] = None
+    genero: Optional[str] = None
     especialidades: List[EspecialidadResponse] = []
     
     class Config:
@@ -52,6 +57,7 @@ class MedicoListResponse(BaseModel):
     nombre: str
     apellido: str
     nombre_completo: str
+    email: str
     especialidades: List[EspecialidadResponse] = []
     
     class Config:
@@ -64,9 +70,13 @@ class PacienteResponse(BaseModel):
     dni: str
     nombre: str
     apellido: str
+    nombre_completo: str
     email: str
     telefono: str
     fecha_nacimiento: date
+    direccion: str
+    obra_social: Optional[str] = None
+    numero_afiliado: Optional[str] = None
     
     class Config:
         from_attributes = True
@@ -248,6 +258,35 @@ class PacienteCreate(BaseModel):
     @classmethod
     def validar_fecha_nacimiento(cls, v: date) -> date:
         """Valida que la fecha de nacimiento sea coherente."""
+        if v >= date.today():
+            raise ValueError("La fecha de nacimiento debe ser anterior a hoy")
+        
+        edad = (date.today() - v).days // 365
+        if edad > 120:
+            raise ValueError("La fecha de nacimiento no es válida")
+        
+        return v
+
+
+class PacienteUpdate(BaseModel):
+    """Esquema para actualizar un paciente."""
+    dni: Optional[str] = Field(None, min_length=7, max_length=10)
+    nombre: Optional[str] = Field(None, min_length=2, max_length=50)
+    apellido: Optional[str] = Field(None, min_length=2, max_length=50)
+    email: Optional[EmailStr] = None
+    telefono: Optional[str] = Field(None, min_length=10, max_length=20)
+    fecha_nacimiento: Optional[date] = None
+    direccion: Optional[str] = Field(None, min_length=5, max_length=200)
+    obra_social: Optional[str] = Field(None, max_length=100)
+    numero_afiliado: Optional[str] = Field(None, max_length=50)
+    
+    @field_validator('fecha_nacimiento')
+    @classmethod
+    def validar_fecha_nacimiento(cls, v: Optional[date]) -> Optional[date]:
+        """Valida que la fecha de nacimiento sea coherente."""
+        if v is None:
+            return v
+            
         if v >= date.today():
             raise ValueError("La fecha de nacimiento debe ser anterior a hoy")
         

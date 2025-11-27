@@ -93,6 +93,13 @@ class APIClient {
         });
     }
 
+    async updatePaciente(id, pacienteData) {
+        return this.request(`/pacientes/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify(pacienteData),
+        });
+    }
+
     async deletePaciente(id) {
         return this.request(`/pacientes/${id}`, {
             method: 'DELETE',
@@ -131,6 +138,10 @@ class APIClient {
             method: 'PUT',
             body: JSON.stringify(updateData),
         });
+    }
+
+    async getMedicoById(id) {
+        return this.request(`/medicos/${id}`);
     }
 
     async deleteMedico(medicoId) {

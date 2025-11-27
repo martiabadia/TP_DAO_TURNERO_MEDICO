@@ -19,7 +19,8 @@ class ReporteService:
         Obtiene el listado de turnos en un rango de fechas, con filtros opcionales de médico y especialidad.
         """
         with self.db.get_session() as session:
-            query = session.query(Turno).join(Paciente).join(Especialidad).join(Medico).filter(
+            query = session.query(Turno).join(Paciente).join(Especialidad).join(Medico).join(EstadoTurno).filter(
+                Turno.activo == True,
                 func.date(Turno.fecha_hora) >= fecha_inicio,
                 func.date(Turno.fecha_hora) <= fecha_fin
             )
@@ -52,6 +53,7 @@ class ReporteService:
                 Especialidad.nombre,
                 func.count(Turno.id)
             ).join(Turno).filter(
+                Turno.activo == True,
                 func.date(Turno.fecha_hora) >= fecha_inicio,
                 func.date(Turno.fecha_hora) <= fecha_fin
             )
@@ -72,6 +74,7 @@ class ReporteService:
         """
         with self.db.get_session() as session:
             query = session.query(Turno).join(Paciente).join(Medico).join(Especialidad).join(EstadoTurno).filter(
+                Turno.activo == True,
                 EstadoTurno.codigo == "ASIS",
                 func.date(Turno.fecha_hora) >= fecha_inicio,
                 func.date(Turno.fecha_hora) <= fecha_fin
@@ -104,6 +107,7 @@ class ReporteService:
         """
         with self.db.get_session() as session:
             base_query = session.query(func.count(Turno.id)).join(EstadoTurno).filter(
+                Turno.activo == True,
                 func.date(Turno.fecha_hora) >= fecha_inicio,
                 func.date(Turno.fecha_hora) <= fecha_fin
             )

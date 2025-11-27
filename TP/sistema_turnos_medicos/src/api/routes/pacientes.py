@@ -3,7 +3,7 @@ Rutas para gestión de pacientes.
 """
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status
-from src.api.schemas import PacienteResponse, PacienteCreate, SuccessResponse
+from src.api.schemas import PacienteResponse, PacienteCreate, PacienteUpdate, SuccessResponse
 from src.api.dependencies import get_uow
 from src.repositories.unit_of_work import UnitOfWork
 from src.domain.paciente import Paciente
@@ -95,6 +95,72 @@ def crear_paciente(
         )
 
 
+@router.put("/{paciente_id}", response_model=PacienteResponse)
+def actualizar_paciente(
+    paciente_id: int,
+    paciente_data: PacienteUpdate,
+    uow: UnitOfWork = Depends(get_uow)
+):
+    """Actualiza los datos de un paciente."""
+    try:
+        paciente = uow.pacientes.get_by_id(paciente_id)
+        if not paciente:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Paciente con ID {paciente_id} no encontrado"
+            )
+        
+        # Verificar unicidad de DNI si se está actualizando
+        if paciente_data.dni and paciente_data.dni != paciente.dni:
+            if uow.pacientes.exists_dni(paciente_data.dni, exclude_id=paciente_id):
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Ya existe un paciente con DNI {paciente_data.dni}"
+                )
+        
+        # Verificar unicidad de email si se está actualizando
+        if paciente_data.email and paciente_data.email != paciente.email:
+            if uow.pacientes.exists_email(paciente_data.email, exclude_id=paciente_id):
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Ya existe un paciente con email {paciente_data.email}"
+                )
+        
+        # Actualizar campos
+        if paciente_data.dni:
+            paciente.dni = paciente_data.dni
+        if paciente_data.nombre:
+            paciente.nombre = paciente_data.nombre
+        if paciente_data.apellido:
+            paciente.apellido = paciente_data.apellido
+        if paciente_data.email:
+            paciente.email = paciente_data.email
+        if paciente_data.telefono:
+            paciente.telefono = paciente_data.telefono
+        if paciente_data.fecha_nacimiento:
+            paciente.fecha_nacimiento = paciente_data.fecha_nacimiento
+        if paciente_data.direccion:
+            paciente.direccion = paciente_data.direccion
+        if paciente_data.obra_social is not None:
+            paciente.obra_social = paciente_data.obra_social
+        if paciente_data.numero_afiliado is not None:
+            paciente.numero_afiliado = paciente_data.numero_afiliado
+        
+        uow.pacientes.update(paciente)
+        uow.commit()
+        
+        return paciente
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        uow.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al actualizar paciente: {str(e)}"
+        )
+
+
 @router.delete("/{paciente_id}", response_model=SuccessResponse)
 def eliminar_paciente(
     paciente_id: int,
@@ -109,7 +175,7 @@ def eliminar_paciente(
                 detail=f"Paciente con ID {paciente_id} no encontrado"
             )
         
-        uow.pacientes.delete(paciente_id)
+        uow.pacientes.delete(paciente)
         uow.commit()
         
         return SuccessResponse(
