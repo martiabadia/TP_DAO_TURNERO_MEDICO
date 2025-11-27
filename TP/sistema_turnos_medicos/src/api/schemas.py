@@ -375,3 +375,88 @@ class PacienteReporteResponse(BaseModel):
 class AsistenciaReporteResponse(BaseModel):
     asistencias: int
     inasistencias: int
+
+
+# ============================================================
+# ESQUEMAS DE HISTORIAL CLÍNICO
+# ============================================================
+
+class ItemRecetaResponse(BaseModel):
+    """Esquema de respuesta para item de receta."""
+    id: int
+    medicamento: str
+    dosis: Optional[str] = None
+    frecuencia: Optional[str] = None
+    duracion: Optional[str] = None
+    indicaciones: Optional[str] = None
+    
+    class Config:
+        from_attributes = True
+
+
+class RecetaResponse(BaseModel):
+    """Esquema de respuesta para receta médica."""
+    id: int
+    id_consulta: int
+    fecha_emision: date
+    estado: str
+    items: List[ItemRecetaResponse] = []
+    
+    class Config:
+        from_attributes = True
+
+
+class ConsultaResponse(BaseModel):
+    """Esquema de respuesta para consulta médica (historial clínico)."""
+    id: int
+    id_turno: int
+    motivo: Optional[str] = None
+    observaciones: Optional[str] = None
+    diagnostico: Optional[str] = None
+    indicaciones: Optional[str] = None
+    fecha_atencion: datetime
+    recetas: List[RecetaResponse] = []
+    
+    class Config:
+        from_attributes = True
+
+
+class ConsultaCreate(BaseModel):
+    """Esquema para crear una consulta (entrada de historial clínico)."""
+    id_turno: int = Field(..., gt=0, description="ID del turno atendido")
+    motivo: Optional[str] = Field(None, max_length=500, description="Motivo de la consulta")
+    observaciones: Optional[str] = Field(None, max_length=1000, description="Observaciones del médico")
+    diagnostico: Optional[str] = Field(None, max_length=500, description="Diagnóstico médico")
+    indicaciones: Optional[str] = Field(None, max_length=1000, description="Indicaciones al paciente")
+
+
+class ConsultaUpdate(BaseModel):
+    """Esquema para actualizar una consulta."""
+    motivo: Optional[str] = Field(None, max_length=500)
+    observaciones: Optional[str] = Field(None, max_length=1000)
+    diagnostico: Optional[str] = Field(None, max_length=500)
+    indicaciones: Optional[str] = Field(None, max_length=1000)
+
+
+class ItemRecetaCreate(BaseModel):
+    """Esquema para crear un item de receta."""
+    medicamento: str = Field(..., min_length=2, max_length=200)
+    dosis: Optional[str] = Field(None, max_length=160)
+    frecuencia: Optional[str] = Field(None, max_length=160)
+    duracion: Optional[str] = Field(None, max_length=160)
+    indicaciones: Optional[str] = Field(None, max_length=500)
+
+
+class RecetaCreate(BaseModel):
+    """Esquema para crear una receta."""
+    id_consulta: int = Field(..., gt=0, description="ID de la consulta asociada")
+    items: List[ItemRecetaCreate] = Field(..., min_length=1, description="Lista de medicamentos")
+
+
+class HistorialClinicoResponse(BaseModel):
+    """Esquema de respuesta para historial clínico completo de un paciente."""
+    paciente_id: int
+    paciente_nombre: str
+    paciente_dni: str
+    total_consultas: int
+    consultas: List[dict]  # Consultas con información del turno, médico, etc.

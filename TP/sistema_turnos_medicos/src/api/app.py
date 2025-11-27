@@ -8,7 +8,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
 from pathlib import Path
 
-from src.api.routes import pacientes, medicos, especialidades, turnos, reportes
+from src.api.routes import pacientes, medicos, especialidades, turnos, reportes, historial
 from src.repositories.database import db_manager
 from src.repositories.init_data import inicializar_datos_base
 
@@ -115,3 +115,4 @@ app.include_router(medicos.router, prefix="/api")
 app.include_router(especialidades.router, prefix="/api")
 app.include_router(turnos.router, prefix="/api")
 app.include_router(reportes.router, prefix="/api")
+app.include_router(historial.router, prefix="/api")

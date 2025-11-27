@@ -340,6 +340,124 @@ class APIClient {
             method: 'DELETE',
         });
     }
+
+    // ============================================================
+    // HISTORIAL CLÍNICO
+    // ============================================================
+
+    async getHistorialPaciente(pacienteId, fechaDesde = null, fechaHasta = null) {
+        const params = new URLSearchParams();
+        if (fechaDesde) params.append('fecha_desde', fechaDesde);
+        if (fechaHasta) params.append('fecha_hasta', fechaHasta);
+        const query = params.toString();
+        return this.request(`/historial/paciente/${pacienteId}${query ? '?' + query : ''}`);
+    }
+
+    async getHistorialPorDNI(dni) {
+        return this.request(`/historial/buscar/dni/${dni}`);
+    }
+
+    async getConsulta(consultaId) {
+        return this.request(`/historial/consulta/${consultaId}`);
+    }
+
+    async getConsultaPorTurno(turnoId) {
+        return this.request(`/historial/turno/${turnoId}/consulta`);
+    }
+
+    async createConsulta(consultaData) {
+        return this.request('/historial/consulta', {
+            method: 'POST',
+            body: JSON.stringify(consultaData),
+        });
+    }
+
+    async updateConsulta(consultaId, consultaData) {
+        return this.request(`/historial/consulta/${consultaId}`, {
+            method: 'PUT',
+            body: JSON.stringify(consultaData),
+        });
+    }
+
+    async deleteConsulta(consultaId) {
+        return this.request(`/historial/consulta/${consultaId}`, {
+            method: 'DELETE',
+        });
+    }
+
+    async getRecetasConsulta(consultaId) {
+        return this.request(`/historial/consulta/${consultaId}/recetas`);
+    }
+
+    async getReceta(recetaId) {
+        return this.request(`/historial/receta/${recetaId}`);
+    }
+
+    async createReceta(recetaData) {
+        return this.request('/historial/receta', {
+            method: 'POST',
+            body: JSON.stringify(recetaData),
+        });
+    }
+
+    async anularReceta(recetaId) {
+        return this.request(`/historial/receta/${recetaId}/anular`, {
+            method: 'POST',
+        });
+    }
+
+    async deleteReceta(recetaId) {
+        return this.request(`/historial/receta/${recetaId}`, {
+            method: 'DELETE',
+        });
+    }
+
+    /**
+     * Descarga la receta en formato PDF
+     */
+    async descargarRecetaPDF(recetaId) {
+        const url = `${API_BASE_URL}/historial/receta/${recetaId}/pdf`;
+        try {
+            const response = await fetch(url);
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(errorText || `Error ${response.status}`);
+            }
+            
+            // Obtener el blob del PDF
+            const blob = await response.blob();
+            
+            // Crear URL temporal y descargar
+            const downloadUrl = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = downloadUrl;
+            
+            // Extraer nombre del archivo del header o usar uno por defecto
+            const contentDisposition = response.headers.get('Content-Disposition');
+            let filename = `receta_${recetaId}.pdf`;
+            if (contentDisposition) {
+                const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+                if (filenameMatch && filenameMatch[1]) {
+                    filename = filenameMatch[1].replace(/['"]/g, '');
+                }
+            }
+            
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(downloadUrl);
+            
+            return true;
+        } catch (error) {
+            console.error(`Error descargando PDF de receta ${recetaId}:`, error);
+            throw error;
+        }
+    }
+
+    async getEstadisticasPaciente(pacienteId) {
+        return this.request(`/historial/estadisticas/paciente/${pacienteId}`);
+    }
 }
 
 // Instancia global del cliente API

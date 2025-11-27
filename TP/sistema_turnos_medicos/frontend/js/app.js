@@ -84,6 +84,11 @@ function navigateTo(page) {
                 initHorarios();
             }
             break;
+        case 'historial':
+            if (typeof initHistorial === 'function') {
+                initHistorial();
+            }
+            break;
         case 'reportes':
             actualizarReportes();
             break;
@@ -968,6 +973,11 @@ function renderizarTablaMisTurnos(turnos) {
                                 <i class="fas fa-check"></i>
                             </button>
                         ` : ''}
+                        ${turno.estado.codigo === 'ASIS' ? `
+                            <button class="btn-icon btn-info" onclick="registrarConsultaDesdeturno(${turno.id})" title="Registrar Consulta">
+                                <i class="fas fa-notes-medical"></i>
+                            </button>
+                        ` : ''}
                         ${turno.estado.codigo !== 'CANC' && turno.estado.codigo !== 'INAS' ? `
                             <button class="btn-icon btn-delete" onclick="cancelarTurnoById(${turno.id})" title="Cancelar">
                                 <i class="fas fa-times"></i>
@@ -1211,6 +1221,9 @@ async function loadPacientesTable() {
                 <td>${formatDate(pac.fecha_nacimiento)}</td>
                 <td>
                     <div class="actions" style="display: flex; gap: 0.5rem;">
+                        <button class="btn-icon btn-info" onclick="verHistorialPaciente(${pac.id})" title="Ver Historial Clínico">
+                            <i class="fas fa-file-medical"></i>
+                        </button>
                         <button class="btn-icon btn-edit" onclick="abrirModalEditarPaciente(${pac.id})" title="Editar">
                             <i class="fas fa-edit"></i>
                         </button>

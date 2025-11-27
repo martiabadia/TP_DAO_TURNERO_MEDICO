@@ -12,3 +12,6 @@ python-dateutil
 # FastAPI y servidor web
 fastapi>=0.104.0
 uvicorn[standard]>=0.24.0
+
+# Generación de PDFs
+reportlab>=4.0.0

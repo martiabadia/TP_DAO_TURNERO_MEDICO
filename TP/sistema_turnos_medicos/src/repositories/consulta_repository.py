@@ -6,6 +6,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session, joinedload
 
 from src.domain.consulta import Consulta
+from src.domain.turno import Turno
 from src.repositories.base_repository import BaseRepository
 
 
@@ -51,8 +52,8 @@ class ConsultaRepository(BaseRepository[Consulta]):
         stmt = select(Consulta).join(
             Consulta.turno
         ).options(
-            joinedload(Consulta.turno).joinedload("medico"),
-            joinedload(Consulta.turno).joinedload("especialidad")
+            joinedload(Consulta.turno).joinedload(Turno.medico),
+            joinedload(Consulta.turno).joinedload(Turno.especialidad)
         ).where(
             Consulta.turno.has(id_paciente=paciente_id),
             Consulta.activo == True  # noqa: E712
@@ -87,7 +88,7 @@ class ConsultaRepository(BaseRepository[Consulta]):
         stmt = select(Consulta).join(
             Consulta.turno
         ).options(
-            joinedload(Consulta.turno).joinedload("paciente")
+            joinedload(Consulta.turno).joinedload(Turno.paciente)
         ).where(
             Consulta.turno.has(id_medico=medico_id),
             Consulta.activo == True  # noqa: E712

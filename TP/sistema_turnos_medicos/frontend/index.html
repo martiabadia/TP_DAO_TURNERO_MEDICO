@@ -52,6 +52,10 @@
                 <i class="fas fa-clock"></i>
                 <span>Horarios</span>
             </button>
+            <button class="nav-btn" data-page="historial">
+                <i class="fas fa-file-medical"></i>
+                <span>Historial Clínico</span>
+            </button>
             <button class="nav-btn" data-page="reportes">
                 <i class="fas fa-chart-bar"></i>
                 <span>Reportes</span>
@@ -945,7 +949,219 @@
     </div>
             </div>
         </section>
+
+        <!-- Historial Clínico Page -->
+        <section id="historial-page" class="page">
+            <div class="container">
+                <div class="page-header">
+                    <h1><i class="fas fa-file-medical"></i> Historial Clínico de Pacientes</h1>
+                    <p>Consulte y gestione el historial médico de los pacientes</p>
+                </div>
+
+                <!-- Buscador de Paciente -->
+                <div class="card">
+                    <h3><i class="fas fa-search"></i> Buscar Paciente</h3>
+                    <div class="form-row">
+                        <div class="form-group" style="flex: 2;">
+                            <label for="historial-buscar-dni">DNI del Paciente</label>
+                            <div class="input-with-button">
+                                <input type="text" id="historial-buscar-dni" placeholder="Ingrese DNI (sin puntos)" maxlength="10">
+                                <button class="btn btn-primary" onclick="buscarHistorialPorDNI()">
+                                    <i class="fas fa-search"></i> Buscar
+                                </button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="historial-fecha-desde">Desde</label>
+                            <input type="date" id="historial-fecha-desde">
+                        </div>
+                        <div class="form-group">
+                            <label for="historial-fecha-hasta">Hasta</label>
+                            <input type="date" id="historial-fecha-hasta">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Información del Paciente -->
+                <div id="historial-paciente-info" class="card" style="display: none;">
+                    <div class="historial-header">
+                        <div class="paciente-resumen">
+                            <h3><i class="fas fa-user"></i> <span id="historial-paciente-nombre">-</span></h3>
+                            <p><strong>DNI:</strong> <span id="historial-paciente-dni">-</span></p>
+                        </div>
+                        <div class="historial-stats">
+                            <div class="stat-item">
+                                <span class="stat-number" id="historial-total-consultas">0</span>
+                                <span class="stat-label">Consultas</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number" id="historial-total-recetas">0</span>
+                                <span class="stat-label">Recetas</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Lista de Consultas -->
+                <div id="historial-consultas-container" class="card" style="display: none;">
+                    <div class="card-header">
+                        <h3><i class="fas fa-notes-medical"></i> Historial de Consultas</h3>
+                    </div>
+                    <div id="historial-consultas-list" class="consultas-timeline">
+                        <!-- Se carga dinámicamente -->
+                    </div>
+                    <div id="historial-sin-consultas" class="empty-state" style="display: none;">
+                        <i class="fas fa-clipboard-list"></i>
+                        <p>Este paciente no tiene consultas registradas</p>
+                    </div>
+                </div>
+            </div>
+        </section>
     </main>
+
+    <!-- Modal Ver Consulta Detalle -->
+    <div id="modal-ver-consulta" class="modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2><i class="fas fa-file-medical-alt"></i> Detalle de Consulta</h2>
+                <button class="modal-close" onclick="cerrarModalVerConsulta()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="consulta-detalle">
+                <div class="consulta-info-grid">
+                    <div class="info-item">
+                        <label>Fecha de Atención</label>
+                        <span id="consulta-det-fecha">-</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Médico</label>
+                        <span id="consulta-det-medico">-</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Especialidad</label>
+                        <span id="consulta-det-especialidad">-</span>
+                    </div>
+                </div>
+                
+                <div class="consulta-seccion">
+                    <h4><i class="fas fa-comment-medical"></i> Motivo de Consulta</h4>
+                    <p id="consulta-det-motivo" class="consulta-texto">-</p>
+                </div>
+                
+                <div class="consulta-seccion">
+                    <h4><i class="fas fa-stethoscope"></i> Diagnóstico</h4>
+                    <p id="consulta-det-diagnostico" class="consulta-texto">-</p>
+                </div>
+                
+                <div class="consulta-seccion">
+                    <h4><i class="fas fa-eye"></i> Observaciones</h4>
+                    <p id="consulta-det-observaciones" class="consulta-texto">-</p>
+                </div>
+                
+                <div class="consulta-seccion">
+                    <h4><i class="fas fa-clipboard-list"></i> Indicaciones</h4>
+                    <p id="consulta-det-indicaciones" class="consulta-texto">-</p>
+                </div>
+                
+                <!-- Recetas asociadas -->
+                <div class="consulta-seccion">
+                    <h4><i class="fas fa-prescription"></i> Recetas Emitidas</h4>
+                    <div id="consulta-det-recetas" class="recetas-list">
+                        <!-- Se carga dinámicamente -->
+                    </div>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" onclick="cerrarModalVerConsulta()">
+                    Cerrar
+                </button>
+                <button type="button" class="btn btn-success" onclick="emitirRecetaDesdeConsulta()">
+                    <i class="fas fa-prescription"></i> Nueva Receta
+                </button>
+                <button type="button" class="btn btn-primary" onclick="abrirModalEditarConsulta()">
+                    <i class="fas fa-edit"></i> Editar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Crear/Editar Consulta -->
+    <div id="modal-consulta" class="modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2 id="modal-consulta-titulo"><i class="fas fa-notes-medical"></i> Nueva Consulta</h2>
+                <button class="modal-close" onclick="cerrarModalConsulta()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="form-consulta">
+                <input type="hidden" id="consulta-id">
+                <input type="hidden" id="consulta-turno-id">
+                
+                <div class="form-group">
+                    <label for="consulta-motivo">Motivo de la Consulta</label>
+                    <textarea id="consulta-motivo" rows="2" placeholder="Describa el motivo de la consulta"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="consulta-diagnostico">Diagnóstico *</label>
+                    <textarea id="consulta-diagnostico" rows="3" required placeholder="Ingrese el diagnóstico médico"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="consulta-observaciones">Observaciones</label>
+                    <textarea id="consulta-observaciones" rows="3" placeholder="Observaciones clínicas adicionales"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="consulta-indicaciones">Indicaciones al Paciente</label>
+                    <textarea id="consulta-indicaciones" rows="3" placeholder="Indicaciones y recomendaciones para el paciente"></textarea>
+                </div>
+                
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="cerrarModalConsulta()">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Guardar Consulta
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Crear Receta -->
+    <div id="modal-receta" class="modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2><i class="fas fa-prescription"></i> Nueva Receta Electrónica</h2>
+                <button class="modal-close" onclick="cerrarModalReceta()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="form-receta">
+                <input type="hidden" id="receta-consulta-id">
+                
+                <div id="receta-items-container">
+                    <!-- Items de receta se agregan dinámicamente -->
+                </div>
+                
+                <button type="button" class="btn btn-secondary" onclick="agregarItemReceta()">
+                    <i class="fas fa-plus"></i> Agregar Medicamento
+                </button>
+                
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="cerrarModalReceta()">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-file-prescription"></i> Emitir Receta
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <!-- Modal Editar Paciente -->
     <div id="modal-editar-paciente" class="modal">
@@ -1099,11 +1315,12 @@
     <!-- Toast Notifications -->
     <div id="toast-container" class="toast-container"></div>
 
-    <script src="/static/js/api.js?v=6"></script>
+    <script src="/static/js/api.js?v=7"></script>
     <script src="/static/js/reportes.js?v=2"></script>
     <script src="/static/js/especialidades.js?v=1"></script>
     <script src="/static/js/horarios.js?v=4"></script>
-    <script src="/static/js/app.js?v=8"></script>
+    <script src="/static/js/historial.js?v=1"></script>
+    <script src="/static/js/app.js?v=9"></script>
 </body>
 
 </html>
