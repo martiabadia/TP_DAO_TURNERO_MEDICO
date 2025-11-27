@@ -139,9 +139,12 @@ def inicializar_medicos_ejemplo(uow: UnitOfWork) -> None:
     ]
     
     for data in medicos_data:
-        # Verificar si ya existe
-        existing = uow.medicos.get_by_matricula(data["matricula"])
-        if existing is not None:
+        # Verificar si ya existe por matrícula, DNI o email
+        existing_mat = uow.medicos.get_by_matricula(data["matricula"])
+        existing_dni = uow.medicos.exists_dni(data["dni"])
+        existing_email = uow.medicos.exists_email(data["email"])
+        
+        if existing_mat is not None or existing_dni or existing_email:
             continue
         
         # Crear médico
@@ -225,9 +228,11 @@ def inicializar_pacientes_ejemplo(uow: UnitOfWork) -> None:
     ]
     
     for data in pacientes_data:
-        # Verificar si ya existe
-        existing = uow.pacientes.get_by_dni(data["dni"])
-        if existing is not None:
+        # Verificar si ya existe por DNI o email
+        existing_dni = uow.pacientes.get_by_dni(data["dni"])
+        existing_email = uow.pacientes.get_by_email(data["email"])
+        
+        if existing_dni is not None or existing_email is not None:
             continue
         
         paciente = Paciente(**data)

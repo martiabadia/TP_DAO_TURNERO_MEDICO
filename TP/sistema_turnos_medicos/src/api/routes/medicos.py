@@ -29,6 +29,7 @@ def listar_medicos(
             nombre=m.nombre,
             apellido=m.apellido,
             nombre_completo=m.nombre_completo,
+            email=m.email,
             especialidades=m.especialidades
         )
         for m in medicos
@@ -64,6 +65,7 @@ def listar_medicos_por_especialidad(
             nombre=m.nombre,
             apellido=m.apellido,
             nombre_completo=m.nombre_completo,
+            email=m.email,
             especialidades=m.especialidades
         )
         for m in medicos
