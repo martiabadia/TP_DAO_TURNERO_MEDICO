@@ -179,7 +179,7 @@ async function loadHomeStats() {
         document.getElementById('stat-especialidades').textContent = especialidades.length;
         document.getElementById('stat-pacientes').textContent = pacientes.length;
 
-        // Contar turnos activos (no cancelados)
+        // Contar turnos del mes actual (no cancelados ni inasistidos)
         const turnosActivos = turnos.filter(t =>
             t.estado.codigo !== 'CANC' && t.estado.codigo !== 'INAS'
         );

@@ -70,6 +70,7 @@ class PacienteResponse(BaseModel):
     dni: str
     nombre: str
     apellido: str
+    nombre_completo: str
     email: str
     telefono: str
     fecha_nacimiento: date
