@@ -213,6 +213,11 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
         // Activar el tab seleccionado
         btn.classList.add('active');
         parent.querySelector(`#${tabId}`).classList.add('active');
+        
+        // Si estamos en la sección de reportes, actualizar filtros visibles
+        if (window.actualizarFiltrosVisibles && tabId.startsWith('tab-')) {
+            window.actualizarFiltrosVisibles(tabId);
+        }
     });
 });
 
@@ -698,7 +703,7 @@ function renderizarCalendarioSemanal() {
                 celda.title = diaInfo.motivo_bloqueo || 'Médico no disponible';
             } else if (turnoOcupado) {
                 // Celda ocupada - mostrar información del turno
-                const colores = ['', 'amarillo', 'verde', 'rosa'];
+                const colores = ['amarillo', 'verde', 'rosa'];
                 const colorAleatorio = colores[Math.floor(Math.random() * colores.length)];
                 celda.classList.add('ocupado', colorAleatorio);
 
@@ -735,9 +740,6 @@ function renderizarCalendarioSemanal() {
             } else {
                 // Celda sin disponibilidad (día que el médico no trabaja)
                 celda.classList.add('no-disponible');
-                celda.style.background = '#f8f9fa';
-                celda.style.cursor = 'not-allowed';
-                celda.style.border = '1px solid #e2e8f0';
             }
 
             container.appendChild(celda);
@@ -874,6 +876,7 @@ function initMisTurnos() {
 async function cargarTodosTurnos() {
     misTurnosState.currentDNI = null;
     document.getElementById('buscar-turnos-dni').value = '';
+    document.getElementById('filtro-estado-turno').value = '';
     await cargarMisTurnos();
 }
 
@@ -905,6 +908,12 @@ async function cargarMisTurnos(page = null) {
         
         if (misTurnosState.currentDNI) {
             params.append('dni', misTurnosState.currentDNI);
+        }
+        
+        // Agregar filtro por estado
+        const estadoFiltro = document.getElementById('filtro-estado-turno');
+        if (estadoFiltro && estadoFiltro.value) {
+            params.append('estado', estadoFiltro.value);
         }
         
         const data = await api.request(`/turnos/mis-turnos/listar?${params}`);
@@ -953,9 +962,8 @@ function renderizarTablaMisTurnos(turnos) {
             turno.estado.codigo === 'CONF' ? 'confirmado' :
             turno.estado.codigo === 'CANC' ? 'cancelado' : 'realizado';
         
-        const especialidadNombre = turno.medico.especialidades && turno.medico.especialidades.length > 0
-            ? turno.medico.especialidades[0].nombre
-            : turno.especialidad?.nombre || 'N/A';
+        // Usar la especialidad del turno directamente
+        const especialidadNombre = turno.especialidad?.nombre || 'N/A';
         
         return `
             <tr>

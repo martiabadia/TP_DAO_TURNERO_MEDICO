@@ -104,6 +104,7 @@ def obtener_turnos_medico(
     from sqlalchemy.orm import joinedload
     from src.domain.turno import Turno
     from src.domain.medico import Medico
+    from src.domain.estado_turno import EstadoTurno
     
     medico = uow.medicos.get_by_id(medico_id)
     if not medico:
@@ -112,10 +113,11 @@ def obtener_turnos_medico(
             detail=f"Médico con ID {medico_id} no encontrado"
         )
     
-    # Query con eager loading de relaciones
-    query = uow.session.query(Turno).filter(
+    # Query con eager loading de relaciones, excluyendo turnos cancelados
+    query = uow.session.query(Turno).join(Turno.estado).filter(
         Turno.id_medico == medico_id,
-        Turno.activo == True
+        Turno.activo == True,
+        EstadoTurno.codigo != 'CANC'
     ).options(
         joinedload(Turno.paciente),
         joinedload(Turno.medico).joinedload(Medico.especialidades),
@@ -416,13 +418,15 @@ def cancelar_turno(
 @router.get("/mis-turnos/listar", response_model=MisTurnosResponse)
 def listar_mis_turnos(
     dni: str = None,
+    estado: str = None,
     page: int = Query(1, ge=1),
     page_size: int = Query(15, ge=1, le=100),
     uow: UnitOfWork = Depends(get_uow)
 ):
     """
-    Lista todos los turnos no cancelados con paginación.
+    Lista todos los turnos con paginación.
     Si se proporciona DNI, filtra por paciente.
+    Si se proporciona estado, filtra por estado del turno.
     """
     from sqlalchemy.orm import joinedload
     from src.domain.turno import Turno
@@ -436,13 +440,14 @@ def listar_mis_turnos(
         joinedload(Turno.estado)
     )
     
-    # Filtrar solo turnos activos y no cancelados
+    # Filtrar solo turnos activos
     query = query.filter(Turno.activo == True)
     
-    # Obtener estado cancelado
-    estado_cancelado = uow.estados_turno.get_by_codigo('cancelado')
-    if estado_cancelado:
-        query = query.filter(Turno.id_estado != estado_cancelado.id)
+    # Filtrar por estado si se proporciona
+    if estado:
+        estado_obj = uow.estados_turno.get_by_codigo(estado)
+        if estado_obj:
+            query = query.filter(Turno.id_estado == estado_obj.id)
     
     # Filtrar por DNI si se proporciona
     if dni:
@@ -459,8 +464,8 @@ def listar_mis_turnos(
                 total_pages=0
             )
     
-    # Ordenar por fecha descendente
-    query = query.order_by(Turno.fecha_hora.desc())
+    # Ordenar por fecha de creación descendente (más recientes primero)
+    query = query.order_by(Turno.fecha_creacion.desc())
     
     # Contar total
     total = query.count()

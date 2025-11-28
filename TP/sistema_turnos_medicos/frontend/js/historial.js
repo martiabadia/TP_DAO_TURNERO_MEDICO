@@ -489,6 +489,12 @@ async function guardarReceta() {
         // Recargar historial
         if (historialState.pacienteActual) {
             await buscarHistorialPorDNI();
+            
+            // Reabrir el modal con los datos actualizados de la consulta
+            const consultaActualizada = historialState.consultas.find(c => c.id === parseInt(consultaId));
+            if (consultaActualizada) {
+                verDetalleConsulta(consultaActualizada);
+            }
         }
         
     } catch (error) {

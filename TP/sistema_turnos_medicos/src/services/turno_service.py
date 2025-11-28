@@ -321,6 +321,9 @@ class TurnoService:
         # Obtener turnos existentes del médico para esa fecha
         turnos_existentes = self.uow.turnos.get_por_medico_y_fecha(medico_id, fecha)
         
+        # Obtener la hora actual
+        ahora = datetime.now()
+        
         # Generar slots disponibles
         horarios_disponibles = []
         
@@ -330,6 +333,11 @@ class TurnoService:
             hora_fin = datetime.combine(fecha, disp.hora_hasta)
             
             while hora_actual + timedelta(minutes=duracion_minutos) <= hora_fin:
+                # Saltar horarios que ya pasaron
+                if hora_actual <= ahora:
+                    hora_actual += timedelta(minutes=disp.duracion_slot or duracion_minutos)
+                    continue
+                
                 # Verificar si hay solapamiento con turnos existentes
                 hay_solape = False
                 hora_fin_slot = hora_actual + timedelta(minutes=duracion_minutos)

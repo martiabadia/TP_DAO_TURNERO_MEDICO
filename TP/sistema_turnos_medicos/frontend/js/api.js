@@ -60,7 +60,12 @@ class APIClient {
                 }
                 
                 console.error('Mensaje de error final:', errorMessage);
-                throw new Error(errorMessage);
+                
+                // Crear error personalizado con detail y message
+                const error = new Error(errorMessage);
+                error.detail = errorMessage;
+                error.status = response.status;
+                throw error;
             }
 
             return data;

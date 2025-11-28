@@ -13,7 +13,55 @@ document.addEventListener('DOMContentLoaded', () => {
     // Cargar médicos y especialidades para los selectores
     cargarMedicosSelector();
     cargarEspecialidadesSelector();
+    
+    // Mostrar filtros de la pestaña activa inicial (Asistencia)
+    setTimeout(() => {
+        console.log('Iniciando filtros...');
+        actualizarFiltrosVisibles('tab-asistencia');
+    }, 100);
 });
+
+// Función global para actualizar filtros visibles según la pestaña
+window.actualizarFiltrosVisibles = function(tabId) {
+    console.log('actualizarFiltrosVisibles llamada con:', tabId);
+    
+    const tabButton = document.querySelector(`.tab-btn[data-tab="${tabId}"]`);
+    if (!tabButton) {
+        console.error('No se encontró el botón de tab:', tabId);
+        return;
+    }
+    
+    const filtrosNecesarios = tabButton.getAttribute('data-filtros') || '';
+    console.log('Filtros necesarios:', filtrosNecesarios);
+    
+    const filtroMedico = document.getElementById('filtro-medico-group');
+    const filtroEspecialidad = document.getElementById('filtro-especialidad-group');
+    
+    if (!filtroMedico) {
+        console.error('No se encontró filtro-medico-group');
+        return;
+    }
+    if (!filtroEspecialidad) {
+        console.error('No se encontró filtro-especialidad-group');
+        return;
+    }
+    
+    // Remover clase visible de todos
+    filtroMedico.classList.remove('visible');
+    filtroEspecialidad.classList.remove('visible');
+    
+    // Agregar clase visible solo a los necesarios
+    if (filtrosNecesarios.includes('medico')) {
+        console.log('Mostrando filtro médico');
+        filtroMedico.classList.add('visible');
+    }
+    if (filtrosNecesarios.includes('especialidad')) {
+        console.log('Mostrando filtro especialidad');
+        filtroEspecialidad.classList.add('visible');
+    }
+    
+    console.log('Filtros actualizados. Médico visible:', filtroMedico.classList.contains('visible'), 'Especialidad visible:', filtroEspecialidad.classList.contains('visible'));
+}
 
 async function cargarMedicosSelector() {
     try {

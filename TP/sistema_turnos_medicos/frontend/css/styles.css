@@ -555,6 +555,27 @@ body {
     color: var(--text-primary);
 }
 
+.form-group label small,
+.form-group label .text-muted {
+    display: inline;
+    font-weight: 400;
+    font-size: 0.85em;
+    color: var(--text-secondary);
+    margin-left: 0.25rem;
+    text-align: left;
+    padding: 0;
+    font-style: normal;
+}
+
+/* Filtros dinámicos ocultos por defecto */
+.filtro-dinamico {
+    display: none;
+}
+
+.filtro-dinamico.visible {
+    display: block;
+}
+
 .form-group input,
 .form-group select,
 .form-group textarea {
@@ -587,6 +608,38 @@ body {
 
 .input-with-button input {
     flex: 1;
+}
+
+/* Checkbox Grid */
+.checkbox-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 0.75rem;
+    padding: 1rem;
+    background: var(--bg-color);
+    border-radius: 0.5rem;
+    border: 1px solid var(--border-color);
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    cursor: pointer;
+    transition: background 0.2s;
+    border-radius: 0.25rem;
+}
+
+.checkbox-label:hover {
+    background: rgba(37, 99, 235, 0.05);
+}
+
+.checkbox-label input[type="checkbox"] {
+    width: auto;
+    margin: 0;
+    cursor: pointer;
+    flex-shrink: 0;
 }
 
 /* Paciente Info */
@@ -857,14 +910,19 @@ body {
     border: 2px solid;
 }
 
-.leyenda-color.disponible {
+.leyenda-color.no-disponible {
     background: white;
-    border-color: var(--border-color);
+    border-color: #e5e7eb;
+}
+
+.leyenda-color.disponible {
+    background: #bfdbfe;
+    border-color: #93c5fd;
 }
 
 .leyenda-color.ocupado {
-    background: #93c5fd;
-    border-color: #60a5fa;
+    background: #f3f4f6;
+    border-color: #d1d5db;
 }
 
 .leyenda-color.seleccionado {
@@ -980,19 +1038,20 @@ body {
 }
 
 .cal-celda.disponible {
-    background: #e0f2fe;
+    background: #bfdbfe;
     cursor: pointer;
     transition: all 0.2s ease;
+    border: 1px solid #93c5fd;
 }
 
 .cal-celda.disponible:hover {
-    background: #bae6fd;
+    background: #93c5fd;
     box-shadow: inset 0 0 0 2px var(--primary-color);
     transform: scale(1.02);
 }
 
 .cal-celda.no-disponible {
-    background: #fafafa !important;
+    background: #ffffff !important;
     border: 1px solid #e5e7eb !important;
     cursor: not-allowed !important;
     position: relative;
@@ -1015,9 +1074,10 @@ body {
 }
 
 .cal-celda.ocupado {
-    background: linear-gradient(135deg, #bfdbfe, #93c5fd);
-    border: 1px solid #60a5fa;
+    background: #f3f4f6;
+    border: 1px solid #d1d5db;
     cursor: default;
+    opacity: 0.8;
 }
 
 .cal-celda.ocupado.amarillo {

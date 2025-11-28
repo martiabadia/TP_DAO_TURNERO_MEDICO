@@ -114,22 +114,26 @@ class TurnoRepository(BaseRepository[Turno]):
     ) -> List[Turno]:
         """
         Obtiene todos los turnos de un médico para una fecha específica.
+        Excluye turnos cancelados.
         
         Args:
             medico_id: ID del médico
             fecha: Fecha a buscar
         
         Returns:
-            Lista de turnos del médico en esa fecha
+            Lista de turnos del médico en esa fecha (excluyendo cancelados)
         """
+        from src.domain.estado_turno import EstadoTurno
+        
         fecha_inicio = datetime.combine(fecha, datetime.min.time())
         fecha_fin = datetime.combine(fecha, datetime.max.time())
         
-        stmt = select(Turno).where(
+        stmt = select(Turno).join(Turno.estado).where(
             Turno.id_medico == medico_id,
             Turno.fecha_hora >= fecha_inicio,
             Turno.fecha_hora <= fecha_fin,
-            Turno.activo.is_(True)
+            Turno.activo.is_(True),
+            EstadoTurno.codigo != 'CANC'
         ).order_by(Turno.fecha_hora)
         
         return list(self.session.scalars(stmt).all())

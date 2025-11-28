@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Gestión de Turnos Médicos</title>
-    <link rel="stylesheet" href="/static/css/styles.css?v=7">
+    <link rel="stylesheet" href="/static/css/styles.css?v=9">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -114,7 +114,7 @@
                         <i class="fas fa-calendar-alt"></i>
                         <div class="stat-info">
                             <h3 id="stat-turnos">-</h3>
-                            <p>Turnos del Mes</p>
+                            <p>Turnos Emitidos en el Mes</p>
                         </div>
                     </div>
                     <div class="stat-card">
@@ -131,23 +131,23 @@
                     <div class="steps-grid">
                         <div class="step-card">
                             <div class="step-number">1</div>
-                            <h3>Registrate o Ingresa</h3>
-                            <p>Completa tus datos personales o busca tu DNI si ya eres paciente</p>
+                            <h3>Reservá turnos</h3>
+                            <p>Reservá turnos para los pacientes de la clínica</p>
                         </div>
                         <div class="step-card">
                             <div class="step-number">2</div>
-                            <h3>Selecciona Especialidad</h3>
-                            <p>Elige la especialidad médica que necesitas</p>
+                            <h3>Gestioná la clínica</h3>
+                            <p>Gestioná pacientes, médicos y especialidades</p>
                         </div>
                         <div class="step-card">
                             <div class="step-number">3</div>
-                            <h3>Elige Médico y Horario</h3>
-                            <p>Selecciona el profesional y el horario que mejor te convenga</p>
+                            <h3>Historiales médicos</h3>
+                            <p>Gestioná historiales médicos y emití recetas electrónicas</p>
                         </div>
                         <div class="step-card">
                             <div class="step-number">4</div>
-                            <h3>Confirma tu Turno</h3>
-                            <p>Revisa los datos y confirma tu reserva</p>
+                            <h3>Reportes</h3>
+                            <p>Generá y visualizá reportes y estadísticas</p>
                         </div>
                     </div>
                 </div>
@@ -353,12 +353,12 @@
                             <!-- Leyenda -->
                             <div class="calendario-leyenda">
                                 <div class="leyenda-item">
-                                    <span class="leyenda-color disponible"></span>
-                                    <span>Disponible</span>
+                                    <span class="leyenda-color no-disponible"></span>
+                                    <span>No disponible</span>
                                 </div>
                                 <div class="leyenda-item">
-                                    <span class="leyenda-color ocupado"></span>
-                                    <span>Ocupado</span>
+                                    <span class="leyenda-color disponible"></span>
+                                    <span>Disponible</span>
                                 </div>
                                 <div class="leyenda-item">
                                     <span class="leyenda-color seleccionado"></span>
@@ -456,16 +456,26 @@
 
                 <div class="card">
                     <div class="table-header">
-                        <div class="form-group" style="margin: 0; flex: 1; max-width: 400px;">
+                        <div class="form-group" style="margin: 0; flex: 1; max-width: 300px;">
                             <div class="input-with-button">
                                 <input type="text" id="buscar-turnos-dni" placeholder="Buscar por DNI del paciente">
                                 <button class="btn btn-primary" onclick="buscarTurnosPorDNI()">
-                                    <i class="fas fa-search"></i> Buscar
+                                    <i class="fas fa-search"></i>
                                 </button>
                             </div>
                         </div>
+                        <div class="form-group" style="margin: 0; max-width: 200px;">
+                            <select id="filtro-estado-turno" class="form-control" onchange="cargarMisTurnos()">
+                                <option value="">Todos los estados</option>
+                                <option value="PEND">Pendientes</option>
+                                <option value="CONF">Confirmados</option>
+                                <option value="CANC">Cancelados</option>
+                                <option value="ASIS">Asistidos</option>
+                                <option value="INAS">Inasistidos</option>
+                            </select>
+                        </div>
                         <button class="btn btn-secondary" onclick="cargarTodosTurnos()">
-                            <i class="fas fa-list"></i> Ver Todos
+                            <i class="fas fa-refresh"></i> Limpiar
                         </button>
                     </div>
 
@@ -628,7 +638,7 @@
 
                 <div class="card">
                     <div class="filters-section">
-                        <h3>Filtros Generales</h3>
+                        <h3>Filtros</h3>
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="reporte-fecha-inicio">Fecha Inicio</label>
@@ -638,14 +648,14 @@
                                 <label for="reporte-fecha-fin">Fecha Fin</label>
                                 <input type="date" id="reporte-fecha-fin">
                             </div>
-                            <div class="form-group">
-                                <label for="reporte-medico-select">Médico</label>
+                            <div class="form-group filtro-dinamico" id="filtro-medico-group">
+                                <label for="reporte-medico-select">Médico <small class="text-muted">(opcional)</small></label>
                                 <select id="reporte-medico-select" class="form-control">
                                     <option value="">Todos los médicos</option>
                                 </select>
                             </div>
-                            <div class="form-group">
-                                <label for="reporte-especialidad-select">Especialidad</label>
+                            <div class="form-group filtro-dinamico" id="filtro-especialidad-group">
+                                <label for="reporte-especialidad-select">Especialidad <small class="text-muted">(opcional)</small></label>
                                 <select id="reporte-especialidad-select" class="form-control">
                                     <option value="">Todas las especialidades</option>
                                 </select>
@@ -659,16 +669,16 @@
                     </div>
 
                     <div class="tabs">
-                        <button class="tab-btn active" data-tab="tab-asistencia">
+                        <button class="tab-btn active" data-tab="tab-asistencia" data-filtros="medico,especialidad">
                             <i class="fas fa-chart-pie"></i> Asistencia
                         </button>
-                        <button class="tab-btn" data-tab="tab-especialidad">
+                        <button class="tab-btn" data-tab="tab-especialidad" data-filtros="">
                             <i class="fas fa-chart-bar"></i> Especialidades
                         </button>
-                        <button class="tab-btn" data-tab="tab-medicos">
+                        <button class="tab-btn" data-tab="tab-medicos" data-filtros="medico">
                             <i class="fas fa-user-md"></i> Turnos por Médico
                         </button>
-                        <button class="tab-btn" data-tab="tab-pacientes">
+                        <button class="tab-btn" data-tab="tab-pacientes" data-filtros="medico,especialidad">
                             <i class="fas fa-users"></i> Pacientes Atendidos
                         </button>
                     </div>
@@ -1316,11 +1326,11 @@
     <div id="toast-container" class="toast-container"></div>
 
     <script src="/static/js/api.js?v=7"></script>
-    <script src="/static/js/reportes.js?v=2"></script>
+    <script src="/static/js/reportes.js?v=10"></script>
     <script src="/static/js/especialidades.js?v=1"></script>
     <script src="/static/js/horarios.js?v=4"></script>
     <script src="/static/js/historial.js?v=1"></script>
-    <script src="/static/js/app.js?v=9"></script>
+    <script src="/static/js/app.js?v=11"></script>
 </body>
 
 </html>

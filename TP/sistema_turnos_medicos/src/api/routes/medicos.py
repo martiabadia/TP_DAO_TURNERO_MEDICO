@@ -478,17 +478,22 @@ def crear_bloqueo(
         fecha_hasta=bloqueo.fin
     )
     
-    # Filtrar turnos confirmados
-    turnos_conflicto = [
-        t for t in turnos_afectados 
-        if t.estado.codigo in ['PENDIENTE', 'CONFIRMADO']
-    ]
+    # Separar turnos confirmados y pendientes
+    turnos_confirmados = [t for t in turnos_afectados if t.estado.codigo == 'CONF']
+    turnos_pendientes = [t for t in turnos_afectados if t.estado.codigo == 'PEND']
     
-    if turnos_conflicto:
+    # Si hay turnos confirmados, no permitir el bloqueo
+    if turnos_confirmados:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Existen {len(turnos_conflicto)} turno(s) confirmado(s) en ese período. Debe cancelarlos primero."
+            detail=f"Existen {len(turnos_confirmados)} turno(s) confirmado(s) en ese período. Debe cancelarlos primero."
         )
+    
+    # Cancelar automáticamente los turnos pendientes
+    estado_cancelado = uow.estados_turno.get_by_codigo('CANC')
+    for turno in turnos_pendientes:
+        turno.estado = estado_cancelado
+        uow.turnos.update(turno)
     
     # Crear bloqueo
     from src.domain.disponibilidad import BloqueoMedico
@@ -565,7 +570,7 @@ def actualizar_bloqueo(
         
         turnos_conflicto = [
             t for t in turnos_afectados 
-            if t.estado.codigo in ['PENDIENTE', 'CONFIRMADO']
+            if t.estado.codigo in ['PEND', 'CONF']
         ]
         
         if turnos_conflicto:

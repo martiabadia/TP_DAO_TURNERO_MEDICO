@@ -605,7 +605,13 @@ async function guardarBloqueo(event) {
         
     } catch (error) {
         console.error('Error al guardar bloqueo:', error);
-        const mensaje = error.detail || 'Error al guardar el bloqueo';
+        console.log('Error detail:', error.detail);
+        console.log('Error message:', error.message);
+        
+        // Usar message si detail no está disponible
+        const mensajeError = error.detail || error.message || 'Error desconocido';
+        const mensaje = `Error al generar el bloqueo: ${mensajeError}`;
+        
         showToast(mensaje, 'error');
     } finally {
         hideLoading();

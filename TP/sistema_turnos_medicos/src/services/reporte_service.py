@@ -51,8 +51,8 @@ class ReporteService:
         with self.db.get_session() as session:
             query = session.query(
                 Especialidad.nombre,
-                func.count(Turno.id)
-            ).join(Turno).filter(
+                func.count(Turno.id).label('cantidad')
+            ).join(Turno, Turno.id_especialidad == Especialidad.id).filter(
                 Turno.activo == True,
                 func.date(Turno.fecha_hora) >= fecha_inicio,
                 func.date(Turno.fecha_hora) <= fecha_fin
@@ -64,7 +64,7 @@ class ReporteService:
             if especialidad_id:
                 query = query.filter(Turno.id_especialidad == especialidad_id)
 
-            results = query.group_by(Especialidad.nombre).all()
+            results = query.group_by(Especialidad.id, Especialidad.nombre).order_by(desc('cantidad')).all()
 
             return [{"especialidad": nombre, "cantidad": cantidad} for nombre, cantidad in results]
 
